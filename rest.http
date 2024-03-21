@@ -1,0 +1,16 @@
+### Hello endpoint
+GET http://localhost:8080/api/hello HTTP/1.1
+
+### List products
+# @name ProductList
+GET http://localhost:8080/api/products HTTP/1.1
+
+### Save product
+# @name SaveProduct
+POST http://localhost:8080/api/products HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "Pineapple",
+    "price": "100.00"
+}

@@ -34,6 +34,7 @@ public class OrderServiceImpl implements OrderService{
         var orderItems = orderRequest.getOrderItems().stream().map(this::mapToOrderItemEntity).toList();
         order.setOrderItems(orderItems);
 
+        
         orderRepository.save(order);
 
     }

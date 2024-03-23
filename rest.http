@@ -29,12 +29,22 @@ Content-Type: application/json
 {
    "orderItems":[
         {
-            "productCode":"Kiwi_01",
+            "productCode":"kiw001",
             "quantity":40
         },
         {
-            "productCode":"PNP_01",
+            "productCode":"pin001",
             "quantity":50
         }
    ]
+}
+
+### Save Inventory
+# @name SaveInventory
+POST http://localhost:6002/api/inventory/create HTTP/1.1
+Content-Type: application/json
+
+{
+    "productCode":"pin001",
+    "quantity":"5"
 }

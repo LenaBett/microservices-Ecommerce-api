@@ -30,11 +30,11 @@ Content-Type: application/json
    "orderItems":[
         {
             "productCode":"kiw001",
-            "quantity":40
+            "quantity":10
         },
         {
             "productCode":"pin001",
-            "quantity":50
+            "quantity":10
         }
    ]
 }
@@ -46,5 +46,5 @@ Content-Type: application/json
 
 {
     "productCode":"pin001",
-    "quantity":"5"
+    "quantity":40
 }

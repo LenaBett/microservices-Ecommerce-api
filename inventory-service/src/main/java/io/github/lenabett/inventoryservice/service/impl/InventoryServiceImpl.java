@@ -1,9 +1,14 @@
 package io.github.lenabett.inventoryservice.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import io.github.lenabett.inventoryservice.entity.Inventory;
+import io.github.lenabett.inventoryservice.exception.NotEnoughQuantityException;
 import io.github.lenabett.inventoryservice.model.InventoryCreateDto;
 import io.github.lenabett.inventoryservice.model.InventoryResponse;
 import io.github.lenabett.inventoryservice.repository.InventoryRepository;
@@ -34,5 +39,31 @@ public class InventoryServiceImpl implements InventoryService{
         BeanUtils.copyProperties(source, target);
         return target;
 
+    }
+
+    @Override
+    public Boolean checkInventory(List<String> productCodes, List<Integer> productQuantities) {
+       
+         Map<String, Integer> unavailableItems = new HashMap<>();
+
+        for (int i = 0; i < productCodes.size(); i++) {
+            String productCode = productCodes.get(i);
+            Integer productQuantity = productQuantities.get(i);
+            Inventory inventory = inventoryRepository.findByProductCode(productCode).orElse(null);
+            if (inventory != null) {
+                // check if enough
+                var dbInventory = inventory.getQuantity();
+                if (productQuantity > dbInventory) {
+                    unavailableItems.put(productCode, productQuantity - dbInventory);
+                }
+            } else {
+                unavailableItems.put(productCode, productQuantity);
+            }
+        }
+        if(unavailableItems.isEmpty()){
+            return true;
+        }else{
+            throw new NotEnoughQuantityException("Not Enough Quantity in Stock", unavailableItems);
+        }
     }
 }

@@ -1,25 +1,34 @@
 package io.github.lenabett.orderservice.service.impl;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import io.github.lenabett.orderservice.entity.Order;
 import io.github.lenabett.orderservice.entity.OrderItem;
+import io.github.lenabett.orderservice.model.GenericResponse;
 import io.github.lenabett.orderservice.model.OrderItemRequest;
 import io.github.lenabett.orderservice.model.OrderRequest;
 import io.github.lenabett.orderservice.repository.OrderRepository;
 import io.github.lenabett.orderservice.service.OrderService;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService{
     
     private final OrderRepository orderRepository;
+    private final WebClient webClient;
 
-    public OrderServiceImpl(OrderRepository orderRepository){
+    public OrderServiceImpl(OrderRepository orderRepository, WebClient webClient){
         this.orderRepository= orderRepository;
+        this.webClient=webClient;
     }
 
     @Override
@@ -27,15 +36,41 @@ public class OrderServiceImpl implements OrderService{
 
         Order order = new Order();
 
-        order.setOrderNumber(UUID.randomUUID().toString());
+        // Checks
+        // ! All products exists in the inventory
+        // http://localhost:6002/api/inventory/check
+        // restTemplate
 
-        order.setOrderTime(Instant.now());
-        
-        var orderItems = orderRequest.getOrderItems().stream().map(this::mapToOrderItemEntity).toList();
-        order.setOrderItems(orderItems);
+        List<String> productCodes = new ArrayList<>();
+        List<Integer> productQuantities = new ArrayList<>();
 
-        
-        orderRepository.save(order);
+        for (OrderItemRequest orderItemRequest : orderRequest.getOrderItems()) {
+            productCodes.add(orderItemRequest.getProductCode());
+            productQuantities.add(orderItemRequest.getQuantity());
+        }
+        log.info("productCodes",productCodes);       
+        log.info("productQuantities",productQuantities);   
+        GenericResponse<Boolean> response = webClient.get()
+                .uri("http://localhost:6002/api/inventory/check",
+                        uriBuilder -> uriBuilder
+                                .queryParam("productCodes", productCodes)
+                                .queryParam("productQuantities", productQuantities)
+                                .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<GenericResponse<Boolean>>() {
+                })
+                .block();
+        if (response.isSuccess()) {
+            // stock
+            order.setOrderNumber(UUID.randomUUID().toString());
+            order.setOrderTime(Instant.now());
+            var orderItems = orderRequest.getOrderItems().stream().map(this::mapToOrderItemEntity).toList();
+            order.setOrderItems(orderItems);
+            orderRepository.save(order);
+        }else{
+          // ! throw an exception with the listing of the products that do have enough
+          log.error("Not Enough stock");
+        }
 
     }
 

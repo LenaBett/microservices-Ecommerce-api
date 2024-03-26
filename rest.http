@@ -11,9 +11,9 @@ POST http://localhost:7000/api/products HTTP/1.1
 Content-Type: application/json
 
 {
-    "name": "Banana",
+    "name": "Grapefruit",
     "price": "10.00",
-    "productCode": "ban001"
+    "productCode": "gra001"
 }
 
 ### Get Product
@@ -30,11 +30,11 @@ Content-Type: application/json
    "orderItems":[
         {
             "productCode":"kiw001",
-            "quantity":100
+            "quantity":1500
         },
         {
             "productCode":"pin001",
-            "quantity":120
+            "quantity":1500
         }
    ]
 }
@@ -45,6 +45,6 @@ POST http://localhost:6002/api/inventory/create HTTP/1.1
 Content-Type: application/json
 
 {
-    "productCode":"pin001",
-    "quantity":500
+    "productCode":"kiw001",
+    "quantity":200
 }
